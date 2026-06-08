@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Explorer — Attendance System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" href="https://cdn.simpleicons.org/flask">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0f0e0c;
+    --ink-2: #3a3832;
+    --ink-3: #7a7670;
+    --paper: #f7f4ef;
+    --paper-2: #eeeae2;
+    --paper-3: #e4dfd5;
+    --yes: #1a6b44;
+    --yes-bg: #d4efe2;
+    --no: #8b2020;
+    --no-bg: #f5dada;
+    --accent: #2a6b9c;
+    --accent-light: #ddeaf7;
+    --amber: #b05b10;
+    --amber-bg: #f5e6d8;
+    --green: #1a6b44;
+    --green-bg: #d4efe2;
+    --purple: #4a2a7a;
+    --purple-bg: #ece6f5;
+    --rule: rgba(15,14,12,0.12);
+    --serif: 'DM Serif Display', serif;
+    --sans: 'Instrument Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  html { font-size: 16px; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.6; min-height: 100vh; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 230px;
+    flex-shrink: 0;
+    border-right: 1.5px solid var(--rule);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0 0 2rem;
+  }
+
+  .sidebar-logo {
+    padding: 1.8rem 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: .8rem;
+  }
+  .sidebar-eyebrow {
+    font-family: var(--mono);
+    font-size: .62rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+  }
+  .sidebar-eyebrow::before { content: ''; display: block; width: 16px; height: 1px; background: var(--accent); }
+  .sidebar-title-text { font-family: var(--serif); font-size: 1.1rem; font-weight: 400; line-height: 1.2; }
+  .sidebar-title-text em { font-style: italic; color: var(--accent); }
+
+  .sidebar-group-label {
+    font-family: var(--mono);
+    font-size: .6rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: .8rem 1.2rem .3rem;
+  }
+
+  .route-btn {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: .5rem 1.2rem;
+    font-family: var(--sans);
+    font-size: .82rem;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border-left: 2px solid transparent;
+    transition: all .12s;
+  }
+  .route-btn:hover { background: var(--paper-2); color: var(--ink); }
+  .route-btn.active { border-left-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .route-btn .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── MAIN ── */
+  .main-area { flex: 1; min-width: 0; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--paper);
+    border-bottom: 1.5px solid var(--rule);
+    padding: 1rem 2rem;
+  }
+  .search-inner {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    background: var(--paper-2);
+    border: 1.5px solid var(--paper-3);
+    border-radius: 8px;
+    padding: .6rem 1rem;
+    max-width: 520px;
+    transition: border-color .15s;
+  }
+  .search-inner:focus-within { border-color: var(--accent); }
+  .search-icon { color: var(--ink-3); font-size: 1rem; flex-shrink: 0; }
+  #search {
+    border: none; background: transparent; outline: none;
+    font-family: var(--sans); font-size: .88rem; color: var(--ink);
+    width: 100%; caret-color: var(--accent);
+  }
+  #search::placeholder { color: var(--ink-3); }
+
+  /* ── CONTENT ── */
+  .content { padding: 2rem 2.5rem 3rem; max-width: 900px; }
+
+  /* ── OVERVIEW ── */
+  .overview-header { margin-bottom: 1.6rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: .5rem; margin-bottom: .8rem;
+  }
+  .eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--accent); }
+  h1 { font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 400; line-height: 1.15; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .overview-desc { font-size: .88rem; color: var(--ink-3); line-height: 1.7; max-width: 580px; margin-top: .8rem; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin: 1.6rem 0; }
+  .stat-card {
+    background: var(--paper-2);
+    border-radius: 8px;
+    padding: .9rem 1rem;
+  }
+  .stat-num { font-family: var(--serif); font-size: 1.8rem; color: var(--accent); line-height: 1; margin-bottom: .25rem; }
+  .stat-label { font-family: var(--mono); font-size: .63rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: .63rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: .8rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+  .ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .6rem; margin-bottom: 1.4rem; }
+  .ov-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .ov-card:hover { border-color: var(--accent); background: var(--accent-light); }
+  .ov-dot { width: 8px; height: 8px; border-radius: 50%; margin-bottom: .55rem; }
+  .ov-name { font-family: var(--mono); font-size: .78rem; color: var(--ink); font-weight: 500; margin-bottom: .2rem; }
+  .ov-meta { font-size: .72rem; color: var(--ink-3); }
+
+  /* ── ROUTE DETAIL ── */
+  .route-eyebrow {
+    font-family: var(--mono); font-size: .63rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem;
+  }
+  .route-eyebrow::before { content: ''; display: block; width: 16px; height: 1px; background: var(--accent); }
+  h2 { font-family: var(--serif); font-size: 1.9rem; font-weight: 400; line-height: 1.1; margin-bottom: .6rem; }
+  h2 em { font-style: italic; color: var(--accent); }
+  .route-desc-text { font-size: .86rem; color: var(--ink-3); line-height: 1.7; max-width: 580px; margin-bottom: 1.2rem; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-light);
+    border-radius: 0 6px 6px 0;
+    padding: .75rem 1rem;
+    margin-bottom: .7rem;
+    font-size: .83rem;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .callout.warn { border-color: var(--no); background: var(--no-bg); }
+  .callout.warn strong { color: var(--no); }
+  .callout.info { border-color: var(--green); background: var(--green-bg); }
+  .callout.info strong { color: var(--green); }
+  .callout.amber { border-color: var(--amber); background: var(--amber-bg); }
+  .callout.amber strong { color: var(--amber); }
+  .callout strong { color: var(--accent); font-weight: 600; }
+  .callout code { font-family: var(--mono); font-size: .8em; background: rgba(0,0,0,.06); padding: .1em .35em; border-radius: 3px; }
+
+  /* ── ENDPOINTS TABLE ── */
+  .ep-list { display: flex; flex-direction: column; gap: .45rem; margin-bottom: 1.4rem; }
+  .ep-row {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    padding: .65rem 1rem;
+    background: var(--paper);
+    font-size: .82rem;
+    transition: all .12s;
+  }
+  .ep-row:hover { border-color: var(--accent); background: var(--accent-light); }
+  .method-badge {
+    font-family: var(--mono);
+    font-size: .63rem;
+    font-weight: 500;
+    letter-spacing: .04em;
+    padding: .2em .6em;
+    border-radius: 4px;
+    flex-shrink: 0;
+    min-width: 50px;
+    text-align: center;
+  }
+  .m-get  { background: var(--green-bg); color: var(--green); }
+  .m-post { background: var(--accent-light); color: var(--accent); }
+  .m-put  { background: var(--amber-bg); color: var(--amber); }
+  .m-delete { background: var(--no-bg); color: var(--no); }
+  .ep-path { font-family: var(--mono); font-size: .78rem; color: var(--ink); flex: 1; }
+  .ep-desc { font-size: .78rem; color: var(--ink-3); flex: 2; }
+  .ep-perm { font-family: var(--mono); font-size: .62rem; padding: .15em .5em; border-radius: 4px; background: var(--paper-3); color: var(--ink-3); flex-shrink: 0; white-space: nowrap; }
+
+  /* ── FIELDS TABLE ── */
+  .field-table { width: 100%; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; border-collapse: collapse; margin-bottom: 1.4rem; }
+  .field-table thead th {
+    font-family: var(--mono); font-size: .62rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3);
+    text-align: left; padding: .6rem 1rem;
+    background: var(--paper-3); border-bottom: 1.5px solid var(--rule);
+  }
+  .field-table tbody tr { border-bottom: 1px solid var(--rule); transition: background .1s; }
+  .field-table tbody tr:last-child { border-bottom: none; }
+  .field-table tbody tr:hover { background: var(--paper-2); }
+  .field-table td { padding: .6rem 1rem; vertical-align: top; font-size: .82rem; }
+  .field-name { font-family: var(--mono); font-size: .78rem; color: var(--ink); }
+  .field-type { font-family: var(--mono); font-size: .74rem; color: var(--accent); white-space: nowrap; }
+  .field-desc-td { color: var(--ink-3); line-height: 1.5; }
+
+  /* ── BADGES ── */
+  .badge { display: inline-block; font-family: var(--mono); font-size: .6rem; letter-spacing: .04em; padding: .15em .5em; border-radius: 4px; margin-right: 2px; vertical-align: middle; }
+  .b-req { background: var(--no-bg); color: var(--no); }
+  .b-opt { background: var(--paper-3); color: var(--ink-3); }
+  .b-auth { background: var(--amber-bg); color: var(--amber); }
+
+  /* ── RELATED MODULES ── */
+  .rel-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.4rem; }
+  .rel-item {
+    display: flex; align-items: center; gap: .8rem;
+    padding: .6rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    font-size: .82rem;
+    background: var(--paper);
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .rel-item:hover { border-color: var(--accent); background: var(--accent-light); }
+  .rel-arrow { font-family: var(--mono); font-size: .8rem; color: var(--accent); flex-shrink: 0; }
+  .rel-tname { font-family: var(--mono); font-size: .8rem; color: var(--ink); font-weight: 500; flex-shrink: 0; min-width: 160px; }
+  .rel-via { font-size: .78rem; color: var(--ink-3); flex: 1; }
+  .rel-type-badge { font-family: var(--mono); font-size: .62rem; padding: .15em .55em; border-radius: 4px; background: var(--paper-3); color: var(--ink-3); flex-shrink: 0; }
+
+  /* ── EMPTY ── */
+  .empty { text-align: center; padding: 2.5rem 0; color: var(--ink-3); font-size: .88rem; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .content { animation: fadeUp .3s ease both; }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--rule);
+    padding: 1.2rem 2.5rem;
+    font-family: var(--mono);
+    font-size: .65rem;
+    color: var(--ink-3);
+    letter-spacing: .06em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .ep-desc { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar hide-scrollbar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-eyebrow">API Explorer</div>
+      <div class="sidebar-title-text">Attendance <em>API</em></div>
+    </div>
+
+    <button class="route-btn active" data-route="overview" onclick="show('overview')">
+      <span class="dot" style="background:#2a6b9c"></span>Overview
+    </button>
+
+    <div class="sidebar-group-label">System</div>
+    <button class="route-btn" data-route="status" onclick="show('status')"><span class="dot" style="background:#7a7670"></span>/status</button>
+    <button class="route-btn" data-route="auth" onclick="show('auth')"><span class="dot" style="background:#4a2a7a"></span>/auth</button>
+    <button class="route-btn" data-route="system" onclick="show('system')"><span class="dot" style="background:#8b2020"></span>/system</button>
+
+    <div class="sidebar-group-label">Core</div>
+    <button class="route-btn" data-route="entity" onclick="show('entity')"><span class="dot" style="background:#7a7670"></span>/entity</button>
+    <button class="route-btn" data-route="interactor" onclick="show('interactor')"><span class="dot" style="background:#4a2a7a"></span>/interactor</button>
+    <button class="route-btn" data-route="student" onclick="show('student')"><span class="dot" style="background:#1a4d7a"></span>/student</button>
+
+    <div class="sidebar-group-label">Roles & Auth</div>
+    <button class="route-btn" data-route="role" onclick="show('role')"><span class="dot" style="background:#4a2a7a"></span>/role</button>
+    <button class="route-btn" data-route="permission-level" onclick="show('permission-level')"><span class="dot" style="background:#7a7670"></span>/permission-level</button>
+
+    <div class="sidebar-group-label">Attendance</div>
+    <button class="route-btn" data-route="attendance" onclick="show('attendance')"><span class="dot" style="background:#1a6b44"></span>/attendance</button>
+    <button class="route-btn" data-route="attendance-day-time" onclick="show('attendance-day-time')"><span class="dot" style="background:#1a6b44"></span>/attendance-day-time</button>
+    <button class="route-btn" data-route="attendance-method" onclick="show('attendance-method')"><span class="dot" style="background:#1a6b44"></span>/attendance-method</button>
+
+    <div class="sidebar-group-label">Fingerprints</div>
+    <button class="route-btn" data-route="fingerprint" onclick="show('fingerprint')"><span class="dot" style="background:#993c1d"></span>/fingerprint</button>
+    <button class="route-btn" data-route="fingerprint-name" onclick="show('fingerprint-name')"><span class="dot" style="background:#993c1d"></span>/fingerprint-name</button>
+    <button class="route-btn" data-route="fingerprint-type" onclick="show('fingerprint-type')"><span class="dot" style="background:#993c1d"></span>/fingerprint-type</button>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="topbar">
+      <div class="search-inner">
+        <span class="search-icon">⌕</span>
+        <input id="search" type="text" placeholder="Search endpoints, fields, descriptions…">
+      </div>
+    </div>
+
+    <div id="content-area"></div>
+
+    <footer class="footer">
+      <span>Student Attendance System — API Explorer v1</span>
+      <span>14 route groups · 50+ endpoints · JWT + API Key auth · Flask/SQLAlchemy</span>
+    </footer>
+  </div>
+
+</div>
+
+<script>
+const API = {
+  overview: {
+    desc: "Browse all route groups in the Student Attendance System REST API. Click any module card or sidebar entry to explore endpoints, request fields, permission levels, and usage notes.",
+  },
+
+  status: {
+    color: "#7a7670",
+    prefix: "/v1/status",
+    desc: "Health check endpoints. Use these to verify the server is running and that your credentials are valid.",
+    purpose: "No authentication required for the basic health check. The <code>/auth</code> sub-route requires a valid API key and a level-4 JWT token, making it a reliable way to validate credentials end-to-end.",
+    endpoints: [
+      { method:"GET", path:"/v1/status/", desc:"Basic health check — no auth required.", perm:"Public" },
+      { method:"POST", path:"/v1/status/", desc:"Same as GET — accepts both verbs.", perm:"Public" },
+      { method:"GET", path:"/v1/status/auth", desc:"Authenticated health check — validates API key and JWT.", perm:"Level 4 (OWNER)" },
+    ],
+    fields: [],
+    relations: [],
+    notes: [
+      { type:"info", text:"<strong>Tip:</strong> Use <code>GET /v1/status/</code> as a ping before attempting authenticated requests." }
+    ]
+  },
+
+  auth: {
+    color: "#4a2a7a",
+    prefix: "/v1/auth",
+    desc: "Authentication endpoint. POST credentials to receive a signed JWT token for use in all subsequent requests.",
+    purpose: "The API uses two layers of authentication: an <code>x-api-key</code> header for every request, and a Bearer JWT token for protected routes. The token encodes the interactor ID, username, and <code>accessLevel</code> (1–4). It expires in 8 hours.",
+    endpoints: [
+      { method:"POST", path:"/v1/auth/", desc:"Submit username + password. Returns a JWT token and interactor info.", perm:"API Key only" },
+    ],
+    fields: [
+      { name:"username", type:"string", desc:"The interactor's login username.", flags:["REQ"] },
+      { name:"password", type:"string", desc:"Plaintext password — bcrypt comparison is done server-side.", flags:["REQ"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/interactor", desc:"The returned interactor object matches the interactor schema.", type:"references" },
+    ],
+    notes: [
+      { type:"amber", text:"<strong>Headers required:</strong> All requests must include <code>x-api-key: &lt;key&gt;</code>. Protected routes additionally require <code>Authorization: Bearer &lt;token&gt;</code>." },
+      { type:"warn", text:"<strong>Token expiry:</strong> Tokens expire in 8 hours. Your client must re-authenticate and store the new token. There is no refresh endpoint." },
+      { type:"info", text:"<strong>accessLevel in JWT:</strong> The payload contains <code>accessLevel</code> (1–4). This is compared against the <code>levelRequired</code> of each route decorator on every request." }
+    ]
+  },
+
+  system: {
+    color: "#8b2020",
+    prefix: "/v1/system",
+    desc: "System-level bootstrap routes. Used for first-time setup only. Check if the system is blank and create the initial owner account.",
+    purpose: "On a fresh deployment, these routes let you initialise the owner account. The <code>/owner</code> route is locked behind a blank-system check — it cannot be used to create a second owner.",
+    endpoints: [
+      { method:"GET",  path:"/v1/system/blank", desc:"Returns 'true' if no interactors exist, 'false' otherwise.", perm:"API Key only" },
+      { method:"POST", path:"/v1/system/blank", desc:"Same as GET — accepts both verbs.", perm:"API Key only" },
+      { method:"POST", path:"/v1/system/owner", desc:"Creates the first owner account. Fails if any interactor already exists.", perm:"API Key only" },
+    ],
+    fields: [
+      { name:"username", type:"string", desc:"Username for the new owner account.", flags:["REQ"] },
+      { name:"password", type:"string", desc:"Password for the new owner account.", flags:["REQ"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/interactor", desc:"Creates an Entity + Interactor internally.", type:"creates" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>One-time use:</strong> <code>POST /v1/system/owner</code> returns 403 if any interactor already exists. Use <code>/system/blank</code> to check before calling this." },
+      { type:"info", text:"<strong>Role assignment:</strong> The owner is automatically assigned the highest role (OWNER, level 4) based on the <code>role.id DESC</code> query." }
+    ]
+  },
+
+  entity: {
+    color: "#7a7670",
+    prefix: "/v1/entity",
+    desc: "Entity management. Entities are abstract identity anchors — every student and interactor must own one. Create entities before creating students or interactors.",
+    purpose: "An entity has no data beyond its UUID and creation timestamp. It exists so students and interactors share a common identity root without coupling to each other's tables.",
+    endpoints: [
+      { method:"POST",   path:"/v1/entity/", desc:"Create a new empty entity.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/entity/", desc:"List all entities, ordered by creation date descending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/entity/:entityId", desc:"Get a single entity by UUID.", perm:"Level 1+" },
+      { method:"DELETE", path:"/v1/entity/:entityId", desc:"Delete entity. Cascades to the linked student or interactor.", perm:"Level 3+" },
+    ],
+    fields: [],
+    relations: [
+      { arrow:"→", name:"/student", desc:"An entity can be linked to one student.", type:"parent-of" },
+      { arrow:"→", name:"/interactor", desc:"An entity can be linked to one interactor.", type:"parent-of" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>Cascade delete:</strong> Deleting an entity permanently removes its linked student or interactor and all their dependent records (attendance, fingerprints)." }
+    ]
+  },
+
+  interactor: {
+    color: "#4a2a7a",
+    prefix: "/v1/interactor",
+    desc: "Interactor (system user) management. Interactors log in, record attendance, and perform admin actions. Each has a role that determines their permission level.",
+    purpose: "Think of interactors as staff members who use the system. An entity must exist before creating an interactor. The password is bcrypt-hashed server-side using the configured <code>PASSWORD_SALT</code>.",
+    endpoints: [
+      { method:"POST",   path:"/v1/interactor/", desc:"Create a new interactor. Requires an existing entity_id.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/interactor/", desc:"List all interactors, ordered by creation date descending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/interactor/:id", desc:"Get a single interactor by UUID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/interactor/:id", desc:"Update username, password, or role.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/interactor/:id", desc:"Delete interactor. Sets attendance recorder fields to NULL.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"username",  type:"string", desc:"Unique login identifier. Max 250 chars.", flags:["REQ"] },
+      { name:"password",  type:"string", desc:"Plaintext — hashed by the server before storing.", flags:["REQ"] },
+      { name:"entity_id", type:"UUID",   desc:"Must reference an existing entity.", flags:["REQ"] },
+      { name:"role_id",   type:"integer",desc:"Must reference an existing role.", flags:["REQ"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/entity",   desc:"Interactor must own an entity.", type:"requires" },
+      { arrow:"→", name:"/role",     desc:"Role controls permission level.", type:"requires" },
+      { arrow:"←", name:"/attendance", desc:"Attendance rows track who recorded or edited them.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>Password storage:</strong> Never store plaintext. The API bcrypt-hashes using the <code>PASSWORD_SALT</code> env var before writing. The response never includes <code>password_hash</code>." },
+      { type:"info", text:"<strong>PUT fields:</strong> Only <code>username</code>, <code>password</code>, and <code>role_id</code> are patchable. Entity ID cannot be changed after creation." }
+    ]
+  },
+
+  student: {
+    color: "#1a4d7a",
+    prefix: "/v1/student",
+    desc: "Student management. Core person record. Each student must link to an entity and carries personal data, unique carnet ID, email, and phone number.",
+    purpose: "Use soft-delete (<code>is_active: false</code>) via PUT instead of DELETE to preserve attendance history. Hard deletes cascade to all attendance and fingerprint records.",
+    endpoints: [
+      { method:"POST",   path:"/v1/student/", desc:"Create a new student record.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/student/", desc:"List all students, ordered by creation date descending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/student/:studentId", desc:"Get a single student by UUID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/student/:studentId", desc:"Update student fields. All fields optional.", perm:"Level 2+" },
+      { method:"DELETE", path:"/v1/student/:studentId", desc:"Hard delete student. Cascades to attendance and fingerprints.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"entity_id",    type:"UUID",   desc:"Must reference an existing entity (1-to-1).", flags:["REQ"] },
+      { name:"first_name",   type:"string", desc:"Up to 250 characters.", flags:["REQ"] },
+      { name:"last_name",    type:"string", desc:"Up to 250 characters.", flags:["REQ"] },
+      { name:"birthdate",    type:"string", desc:"Date string (YYYY-MM-DD).", flags:["REQ"] },
+      { name:"carnet",       type:"string", desc:"Unique student ID, max 10 chars. Do not change after enrolment.", flags:["REQ"] },
+      { name:"email",        type:"string", desc:"Must be unique across all students.", flags:["REQ"] },
+      { name:"phone_number", type:"string", desc:"Must be unique, max 20 chars.", flags:["REQ"] },
+      { name:"is_active",    type:"boolean",desc:"Default true. Set false to soft-delete.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/entity",      desc:"Student requires a linked entity.", type:"requires" },
+      { arrow:"←", name:"/fingerprint", desc:"A student can have up to 10 fingerprint templates.", type:"has-many" },
+      { arrow:"←", name:"/attendance",  desc:"All attendance records reference a student.", type:"has-many" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>Hard delete cascades:</strong> Deleting a student permanently removes all their attendance records and fingerprint templates. Prefer <code>is_active: false</code> in production." },
+      { type:"amber", text:"<strong>Carnet:</strong> Do not update carnet after enrolment — it may be referenced by external systems and is the human-readable student identifier." }
+    ]
+  },
+
+  role: {
+    color: "#4a2a7a",
+    prefix: "/v1/role",
+    desc: "Role management. Roles map interactors to permission levels. Seeded with INVITED, MODERATOR, ADMINISTRATOR, OWNER.",
+    purpose: "Roles control what an interactor can do via their linked permission_level. Every interactor must have a role. Deleting a role that is in use will fail with a foreign key constraint.",
+    endpoints: [
+      { method:"POST",   path:"/v1/role/", desc:"Create a new role linked to a permission level.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/role/", desc:"List all roles, ordered by creation date descending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/role/:roleId", desc:"Get a single role by integer ID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/role/:roleId", desc:"Update name, description, or permission level.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/role/:roleId", desc:"Delete a role. Fails if any interactor references it.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"name",               type:"string",  desc:"Unique role name, max 20 chars.", flags:["REQ"] },
+      { name:"permission_level_id",type:"integer", desc:"Must reference an existing permission level.", flags:["REQ"] },
+      { name:"description",        type:"string",  desc:"Optional human-readable description.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/permission-level", desc:"Role maps to one permission level.", type:"requires" },
+      { arrow:"←", name:"/interactor",       desc:"Interactors are assigned roles.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"info", text:"<strong>Seeded values:</strong> INVITED (level 1) · MODERATOR (level 2) · ADMINISTRATOR (level 3) · OWNER (level 4). The audit trigger fires on any change to this table." }
+    ]
+  },
+
+  "permission-level": {
+    color: "#7a7670",
+    prefix: "/v1/permission-level",
+    desc: "Permission level management. Maps numeric levels (1–4) to human descriptions. Referenced by roles. Treat as seed data in production.",
+    purpose: "Levels: 1=View, 2=View+Edit, 3=Full CRUD, 4=Full CRUD + System. Modifying levels in production requires updating all affected roles simultaneously.",
+    endpoints: [
+      { method:"POST",   path:"/v1/permission-level/", desc:"Create a new permission level.", perm:"Level 4 (OWNER)" },
+      { method:"GET",    path:"/v1/permission-level/", desc:"List all permission levels, ordered by number ascending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/permission-level/:id", desc:"Get a single permission level by integer ID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/permission-level/:id", desc:"Update the level number or description.", perm:"Level 4 (OWNER)" },
+      { method:"DELETE", path:"/v1/permission-level/:id", desc:"Delete a permission level. Fails if any role references it.", perm:"Level 4 (OWNER)" },
+    ],
+    fields: [
+      { name:"number",      type:"integer", desc:"Unique numeric level value.", flags:["REQ"] },
+      { name:"description", type:"string",  desc:"Human-readable description.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"←", name:"/role", desc:"Roles reference permission levels.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>OWNER only:</strong> Create, update, and delete require level 4. This is the highest restriction in the API. Only the initial OWNER interactor can modify these." }
+    ]
+  },
+
+  attendance: {
+    color: "#1a6b44",
+    prefix: "/v1/attendance",
+    desc: "Attendance record management. The core fact table. Records each student's presence for a specific date and time-of-day slot, with the method used and who recorded it.",
+    purpose: "Each attendance record is unique per student, per date, per day-time slot. Attempts to create a duplicate return 409. The <code>edited_at</code> timestamp is set automatically by a DB trigger on every update.",
+    endpoints: [
+      { method:"POST",   path:"/v1/attendance/", desc:"Record a new attendance event.", perm:"Level 2+" },
+      { method:"GET",    path:"/v1/attendance/", desc:"List all records, ordered by date then created_at descending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/attendance/:attendanceId", desc:"Get a single attendance record by UUID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/attendance/:attendanceId", desc:"Correct an attendance record.", perm:"Level 2+" },
+      { method:"DELETE", path:"/v1/attendance/:attendanceId", desc:"Delete an attendance record. Captured in audit log.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"student_id",               type:"UUID",    desc:"Must reference an existing student.", flags:["REQ"] },
+      { name:"attendance_date",           type:"string",  desc:"Date string (YYYY-MM-DD).", flags:["REQ"] },
+      { name:"attendance_day_time_id",    type:"integer", desc:"Must reference an existing day-time slot.", flags:["REQ"] },
+      { name:"attendance_method_id",      type:"integer", desc:"Must reference an existing attendance method.", flags:["REQ"] },
+      { name:"recorded_by_interactor_id", type:"UUID",    desc:"Which interactor logged this. Optional.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/student",             desc:"Attendance belongs to one student.", type:"requires" },
+      { arrow:"→", name:"/attendance-day-time", desc:"MORNING, AFTERNOON, or NIGHT slot.", type:"requires" },
+      { arrow:"→", name:"/attendance-method",   desc:"AUTOMATIC, MANUAL, or IMPORTED.", type:"requires" },
+      { arrow:"→", name:"/interactor",          desc:"Optional — who recorded the entry.", type:"optional-ref" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>Uniqueness:</strong> (student_id + attendance_date + attendance_day_time_id) must be unique. Conflicts return 409. The API checks this before INSERT." },
+      { type:"info", text:"<strong>edited_at:</strong> Do not include this field in PUT requests — a database trigger updates it automatically on every row change." },
+      { type:"amber", text:"<strong>No soft-delete:</strong> Deletions are permanent but captured in the audit log. Recovery is possible only by reading <code>audit_log.old_data</code>." }
+    ]
+  },
+
+  "attendance-day-time": {
+    color: "#1a6b44",
+    prefix: "/v1/attendance-day-time",
+    desc: "Attendance day-time slot management. Lookup table seeded with MORNING, AFTERNOON, NIGHT. Referenced by every attendance record.",
+    purpose: "Normalises the time-of-day enum. Add new slots here if your institution has more than three attendance windows.",
+    endpoints: [
+      { method:"POST",   path:"/v1/attendance-day-time/", desc:"Create a new day-time slot.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/attendance-day-time/", desc:"List all day-time slots.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/attendance-day-time/:id", desc:"Get a single slot by integer ID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/attendance-day-time/:id", desc:"Update name or description.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/attendance-day-time/:id", desc:"Delete a slot. Fails if any attendance records reference it.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"name",        type:"string", desc:"Unique slot name, max 50 chars (e.g. MORNING).", flags:["REQ"] },
+      { name:"description", type:"string", desc:"Optional description of the time period.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"←", name:"/attendance", desc:"Every attendance record references one slot.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"info", text:"<strong>Seeded values:</strong> MORNING · AFTERNOON · NIGHT. In most deployments these three are sufficient and this table should not change after initial setup." }
+    ]
+  },
+
+  "attendance-method": {
+    color: "#1a6b44",
+    prefix: "/v1/attendance-method",
+    desc: "Attendance method management. Lookup table seeded with AUTOMATIC (fingerprint scanner), MANUAL (staff input), IMPORTED (batch upload).",
+    purpose: "Allows the system to track how each attendance event was captured. Useful for auditing accuracy differences between biometric and manual records.",
+    endpoints: [
+      { method:"POST",   path:"/v1/attendance-method/", desc:"Create a new attendance method.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/attendance-method/", desc:"List all attendance methods.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/attendance-method/:id", desc:"Get a single method by integer ID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/attendance-method/:id", desc:"Update name or description.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/attendance-method/:id", desc:"Delete a method. Fails if any attendance records reference it.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"name",        type:"string", desc:"Unique method name, max 30 chars.", flags:["REQ"] },
+      { name:"description", type:"string", desc:"Optional description.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"←", name:"/attendance", desc:"Every attendance record references one method.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"info", text:"<strong>Seeded values:</strong> AUTOMATIC · MANUAL · IMPORTED." }
+    ]
+  },
+
+  fingerprint: {
+    color: "#993c1d",
+    prefix: "/v1/fingerprint",
+    desc: "Fingerprint template management. Stores raw biometric templates (as hex strings) for each enrolled finger. One template per finger per student, enforced by a unique constraint.",
+    purpose: "Templates are stored as BYTEA in PostgreSQL and returned as hex strings in API responses. Pass the hex string to your biometric SDK — never compare templates in SQL.",
+    endpoints: [
+      { method:"POST",   path:"/v1/fingerprint/", desc:"Enrol a new fingerprint template.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/fingerprint/", desc:"List all fingerprint templates.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/fingerprint/:fingerprintId", desc:"Get a single template by UUID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/fingerprint/:fingerprintId", desc:"Update template data, type, name, or active status.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/fingerprint/:fingerprintId", desc:"Permanently delete a template.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"template",            type:"string (hex)", desc:"Raw biometric data as a hex string.", flags:["REQ"] },
+      { name:"student_id",          type:"UUID",         desc:"Must reference an existing student.", flags:["REQ"] },
+      { name:"fingerprint_type_id", type:"integer",      desc:"Must reference a fingerprint type (LOOP, WHORL, etc.).", flags:["REQ"] },
+      { name:"fingerprint_name_id", type:"integer",      desc:"Must reference a finger name (RIGHT_INDEX, etc.).", flags:["REQ"] },
+      { name:"is_active",           type:"boolean",      desc:"Default true. Set false to retire without deleting.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"→", name:"/student",          desc:"Template belongs to one student.", type:"requires" },
+      { arrow:"→", name:"/fingerprint-name", desc:"Identifies which finger was enrolled.", type:"requires" },
+      { arrow:"→", name:"/fingerprint-type", desc:"Classification of the fingerprint pattern.", type:"requires" },
+    ],
+    notes: [
+      { type:"warn", text:"<strong>One template per finger:</strong> (student_id + fingerprint_name_id) must be unique. To re-enrol a finger, set the existing template to <code>is_active: false</code> via PUT, then POST a new one." },
+      { type:"info", text:"<strong>Template format:</strong> Send and receive as a hex string. Convert bytes to hex before POST and from hex after GET before passing to your biometric SDK." }
+    ]
+  },
+
+  "fingerprint-name": {
+    color: "#993c1d",
+    prefix: "/v1/fingerprint-name",
+    desc: "Finger name management. Lookup table seeded with 10 entries: RIGHT/LEFT × THUMB/INDEX/MIDDLE/RING/PINKY.",
+    purpose: "Normalises the finger identifier used in fingerprint enrolment. One entry per anatomical finger. In most deployments this table is read-only after initial seed.",
+    endpoints: [
+      { method:"POST",   path:"/v1/fingerprint-name/", desc:"Create a new finger name entry.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/fingerprint-name/", desc:"List all finger names.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/fingerprint-name/:id", desc:"Get a single finger name by integer ID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/fingerprint-name/:id", desc:"Update name or description.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/fingerprint-name/:id", desc:"Delete. Fails if any fingerprint references it.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"name",        type:"string", desc:"Unique finger name, max 25 chars (e.g. RIGHT_INDEX).", flags:["REQ"] },
+      { name:"description", type:"string", desc:"Optional descriptive label.", flags:["OPT"] },
+    ],
+    relations: [
+      { arrow:"←", name:"/fingerprint", desc:"Each fingerprint row references one finger name.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"info", text:"<strong>Seeded values:</strong> RIGHT_THUMB · RIGHT_INDEX · RIGHT_MIDDLE · RIGHT_RING · RIGHT_PINKY · LEFT_THUMB · LEFT_INDEX · LEFT_MIDDLE · LEFT_RING · LEFT_PINKY" }
+    ]
+  },
+
+  "fingerprint-type": {
+    color: "#993c1d",
+    prefix: "/v1/fingerprint-type",
+    desc: "Fingerprint pattern type management. Lookup table seeded with 7 biometric classification values.",
+    purpose: "Classifies the pattern of each enrolled fingerprint. Used for biometric analysis and reporting. Seeded values cover all standard dermatoglyphic pattern types.",
+    endpoints: [
+      { method:"POST",   path:"/v1/fingerprint-type/", desc:"Create a new fingerprint type.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/fingerprint-type/", desc:"List all fingerprint types.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/fingerprint-type/:id", desc:"Get a single type by integer ID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/fingerprint-type/:id", desc:"Update the type name.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/fingerprint-type/:id", desc:"Delete. Fails if any fingerprint references it.", perm:"Level 3+" },
+    ],
+    fields: [
+      { name:"name", type:"string", desc:"Unique type name, max 20 chars.", flags:["REQ"] },
+    ],
+    relations: [
+      { arrow:"←", name:"/fingerprint", desc:"Each fingerprint row references one type.", type:"referenced-by" },
+    ],
+    notes: [
+      { type:"info", text:"<strong>Seeded values:</strong> LOOP · WHORL · ARCH · TENTED_ARCH · DOUBLE_LOOP · CENTRAL_POCKET_LOOP · ACCIDENTAL" }
+    ]
+  },
+};
+
+const GROUPS = [
+  { label:"System", routes:["status","auth","system"] },
+  { label:"Core", routes:["entity","interactor","student"] },
+  { label:"Roles & Auth", routes:["role","permission-level"] },
+  { label:"Attendance", routes:["attendance","attendance-day-time","attendance-method"] },
+  { label:"Fingerprints", routes:["fingerprint","fingerprint-name","fingerprint-type"] },
+];
+
+let current = "overview";
+let searchQ = "";
+
+function methodBadge(m) {
+  const cls = { GET:"m-get", POST:"m-post", PUT:"m-put", DELETE:"m-delete" }[m] || "";
+  return `<span class="method-badge ${cls}">${m}</span>`;
+}
+
+function fieldBadge(f) {
+  if (f==="REQ") return `<span class="badge b-req">REQUIRED</span>`;
+  if (f==="OPT") return `<span class="badge b-opt">OPTIONAL</span>`;
+  if (f==="AUTH") return `<span class="badge b-auth">AUTH</span>`;
+  return "";
+}
+
+function renderContent() {
+  const area = document.getElementById("content-area");
+  const t = API[current];
+
+  if (current === "overview") {
+    let h = `<div class="content">`;
+    h += `<div class="overview-header">`;
+    h += `<div class="eyebrow">API Explorer</div>`;
+    h += `<h1>Student Attendance System <em>API</em></h1>`;
+    h += `<p class="overview-desc">${API.overview.desc}</p>`;
+    h += `</div>`;
+    h += `<div class="stats-row">`;
+    [{n:14,l:"Route Groups"},{n:"50+",l:"Endpoints"},{n:4,l:"Auth Levels"},{n:"v1",l:"API Version"}].forEach(s=>{
+      h += `<div class="stat-card"><div class="stat-num">${s.n}</div><div class="stat-label">${s.l}</div></div>`;
+    });
+    h += `</div>`;
+
+    h += `<div class="callout amber"><strong>Authentication:</strong> All routes require the <code>x-api-key</code> header. Protected routes additionally require <code>Authorization: Bearer &lt;token&gt;</code> obtained from <code>POST /v1/auth/</code>.</div>`;
+
+    h += `<div class="section-label" style="margin-top:1.2rem">All route groups</div>`;
+    h += `<div class="ov-grid">`;
+    GROUPS.forEach(g => {
+      g.routes.forEach(rk => {
+        const rd = API[rk];
+        const epCount = rd.endpoints ? rd.endpoints.length : 0;
+        h += `<div class="ov-card" onclick="show('${rk}')">`;
+        h += `<div class="ov-dot" style="background:${rd.color}"></div>`;
+        h += `<div class="ov-name">${rd.prefix}</div>`;
+        h += `<div class="ov-meta">${epCount} endpoint${epCount!==1?"s":""}</div>`;
+        h += `</div>`;
+      });
+    });
+    h += `</div>`;
+
+    h += `<div class="callout info"><strong>How to use:</strong> Click any route group above or use the sidebar to explore endpoints, request fields, permission requirements, and usage notes. Use the search bar to filter within a route group.</div>`;
+    h += `</div>`;
+    area.innerHTML = h;
+    return;
+  }
+
+  let eps = t.endpoints || [];
+  let fields = t.fields || [];
+
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    eps = eps.filter(e =>
+      e.path.toLowerCase().includes(q) ||
+      e.method.toLowerCase().includes(q) ||
+      e.desc.toLowerCase().includes(q) ||
+      (e.perm||"").toLowerCase().includes(q)
+    );
+    fields = fields.filter(f =>
+      f.name.toLowerCase().includes(q) ||
+      f.type.toLowerCase().includes(q) ||
+      f.desc.toLowerCase().includes(q)
+    );
+  }
+
+  let h = `<div class="content">`;
+  h += `<div class="route-eyebrow">route group</div>`;
+  h += `<h2><em>${t.prefix}</em></h2>`;
+  h += `<p class="route-desc-text">${t.desc}</p>`;
+
+  if (t.purpose) {
+    h += `<div class="callout">${t.purpose}</div>`;
+  }
+
+  if (t.notes && t.notes.length) {
+    t.notes.forEach(n => {
+      const cls = n.type==="warn" ? "callout warn" : n.type==="info" ? "callout info" : n.type==="amber" ? "callout amber" : "callout";
+      h += `<div class="${cls}">${n.text}</div>`;
+    });
+  }
+
+  h += `<div class="section-label" style="margin-top:1.4rem">Endpoints</div>`;
+
+  if (eps.length) {
+    h += `<div class="ep-list">`;
+    eps.forEach(e => {
+      h += `<div class="ep-row">`;
+      h += methodBadge(e.method);
+      h += `<span class="ep-path">${e.path}</span>`;
+      h += `<span class="ep-desc">${e.desc}</span>`;
+      h += `<span class="ep-perm">${e.perm}</span>`;
+      h += `</div>`;
+    });
+    h += `</div>`;
+  } else {
+    h += `<div class="empty">No endpoints match your search.</div>`;
+  }
+
+  if (t.fields && t.fields.length) {
+    h += `<div class="section-label" style="margin-top:1.4rem">Request fields</div>`;
+    if (fields.length) {
+      h += `<table class="field-table">`;
+      h += `<thead><tr><th>Field</th><th>Type</th><th>Description</th><th>Required</th></tr></thead>`;
+      h += `<tbody>`;
+      fields.forEach(f => {
+        h += `<tr>`;
+        h += `<td><span class="field-name">${f.name}</span></td>`;
+        h += `<td><span class="field-type">${f.type}</span></td>`;
+        h += `<td class="field-desc-td">${f.desc}</td>`;
+        h += `<td>${f.flags.map(fieldBadge).join("")}</td>`;
+        h += `</tr>`;
+      });
+      h += `</tbody></table>`;
+    } else {
+      h += `<div class="empty">No fields match your search.</div>`;
+    }
+  }
+
+  if (t.relations && t.relations.length) {
+    h += `<div class="section-label" style="margin-top:1.4rem">Related route groups</div>`;
+    h += `<div class="rel-list">`;
+    t.relations.forEach(r => {
+      const target = r.name.replace(/^\//, "");
+      const exists = API[target] !== undefined;
+      h += `<div class="rel-item" ${exists ? `onclick="show('${target}')"` : ""}>`;
+      h += `<span class="rel-arrow">${r.arrow}</span>`;
+      h += `<span class="rel-tname">${r.name}</span>`;
+      h += `<span class="rel-via">${r.desc}</span>`;
+      h += `<span class="rel-type-badge">${r.type}</span>`;
+      h += `</div>`;
+    });
+    h += `</div>`;
+  }
+
+  h += `</div>`;
+  area.innerHTML = h;
+}
+
+function show(name) {
+  current = name;
+  searchQ = "";
+  document.getElementById("search").value = "";
+  document.querySelectorAll(".route-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.route === name);
+  });
+  renderContent();
+  document.querySelector(".main-area").scrollTop = 0;
+}
+
+document.getElementById("search").addEventListener("input", function() {
+  searchQ = this.value;
+  renderContent();
+});
+
+renderContent();
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+from .fingerprintType import *
