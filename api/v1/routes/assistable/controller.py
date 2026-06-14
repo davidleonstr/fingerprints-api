@@ -3,16 +3,16 @@ from pydantic import ValidationError
 
 from api.config import DB
 from api.tools import Response, ResponseData, dumpModel
-from api.v1.models import Student, Entity
+from api.v1.models import Assistable, Entity
 
-from api.v1.routes.student.schemas import (
-    StudentsData,
-    StudentData,
-    CreateStudentSchema,
-    UpdateStudentSchema,
+from api.v1.routes.assistable.schemas import (
+    AssistableData,
+    AssistablesData,
+    CreateAssistableSchema,
+    UpdateAssistableSchema,
 )
 
-class StudentController:
+class AssistableController:
 
     @staticmethod
     def create():
@@ -24,7 +24,7 @@ class StudentController:
             ).send(400)
 
         try:
-            payload = CreateStudentSchema(**body)
+            payload = CreateAssistableSchema(**body)
         except ValidationError as e:
             return Response(
                 data=ResponseData(message=e.errors()[0]['msg'])
@@ -37,22 +37,22 @@ class StudentController:
                 data=ResponseData(message='Entity not found')
             ).send(404)
 
-        if Student.query.filter_by(carnet=payload.carnet).first() is not None:
+        if Assistable.query.filter_by(carnet=payload.carnet).first() is not None:
             return Response(
                 data=ResponseData(message='Carnet already taken')
             ).send(409)
 
-        if Student.query.filter_by(email=payload.email).first() is not None:
+        if Assistable.query.filter_by(email=payload.email).first() is not None:
             return Response(
                 data=ResponseData(message='Email already taken')
             ).send(409)
 
-        if Student.query.filter_by(phone_number=payload.phone_number).first() is not None:
+        if Assistable.query.filter_by(phone_number=payload.phone_number).first() is not None:
             return Response(
                 data=ResponseData(message='Phone number already taken')
             ).send(409)
 
-        record = Student(
+        record = Assistable(
             entity_id=payload.entity_id,
             first_name=payload.first_name,
             last_name=payload.last_name,
@@ -68,41 +68,41 @@ class StudentController:
         DB.session.refresh(record)
 
         return Response(
-            data=StudentData(student=dumpModel(record))
+            data=AssistableData(assistable=dumpModel(record))
         ).send(201)
 
     @staticmethod
     def getAll():
         records = (
-            Student.query
-            .order_by(Student.created_at.desc())
+            Assistable.query
+            .order_by(Assistable.created_at.desc())
             .all()
         )
 
         return Response(
-            data=StudentsData(students=[dumpModel(r) for r in records])
+            data=AssistablesData(assistables=[dumpModel(r) for r in records])
         ).send(200)
 
     @staticmethod
-    def getOne(studentId: str):
-        record = Student.query.get(studentId)
+    def getOne(assistableId: str):
+        record = Assistable.query.get(assistableId)
 
         if record is None:
             return Response(
-                data=ResponseData(message='Student not found')
+                data=ResponseData(message='Assistable not found')
             ).send(404)
 
         return Response(
-            data=StudentData(student=dumpModel(record))
+            data=AssistableData(assistable=dumpModel(record))
         ).send(200)
 
     @staticmethod
-    def update(studentId: str):
-        record = Student.query.get(studentId)
+    def update(assistableId: str):
+        record = Assistable.query.get(assistableId)
 
         if record is None:
             return Response(
-                data=ResponseData(message='Student not found')
+                data=ResponseData(message='Assistable not found')
             ).send(404)
 
         body = request.get_json(silent=True)
@@ -113,31 +113,31 @@ class StudentController:
             ).send(400)
 
         try:
-            payload = UpdateStudentSchema(**body)
+            payload = UpdateAssistableSchema(**body)
         except ValidationError as e:
             return Response(
                 data=ResponseData(message=e.errors()[0]['msg'])
             ).send(422)
 
         if payload.carnet is not None:
-            conflict = Student.query.filter_by(carnet=payload.carnet).first()
-            if conflict is not None and str(conflict.id) != studentId:
+            conflict = Assistable.query.filter_by(carnet=payload.carnet).first()
+            if conflict is not None and str(conflict.id) != assistableId:
                 return Response(
                     data=ResponseData(message='Carnet already taken')
                 ).send(409)
             record.carnet = payload.carnet
 
         if payload.email is not None:
-            conflict = Student.query.filter_by(email=payload.email).first()
-            if conflict is not None and str(conflict.id) != studentId:
+            conflict = Assistable.query.filter_by(email=payload.email).first()
+            if conflict is not None and str(conflict.id) != assistableId:
                 return Response(
                     data=ResponseData(message='Email already taken')
                 ).send(409)
             record.email = payload.email
 
         if payload.phone_number is not None:
-            conflict = Student.query.filter_by(phone_number=payload.phone_number).first()
-            if conflict is not None and str(conflict.id) != studentId:
+            conflict = Assistable.query.filter_by(phone_number=payload.phone_number).first()
+            if conflict is not None and str(conflict.id) != assistableId:
                 return Response(
                     data=ResponseData(message='Phone number already taken')
                 ).send(409)
@@ -159,21 +159,21 @@ class StudentController:
         DB.session.refresh(record)
 
         return Response(
-            data=StudentData(student=dumpModel(record))
+            data=AssistableData(assistable=dumpModel(record))
         ).send(200)
 
     @staticmethod
-    def delete(studentId: str):
-        record = Student.query.get(studentId)
+    def delete(assistableId: str):
+        record = Assistable.query.get(assistableId)
 
         if record is None:
             return Response(
-                data=ResponseData(message='Student not found')
+                data=ResponseData(message='Assistable not found')
             ).send(404)
 
         DB.session.delete(record)
         DB.session.commit()
 
         return Response(
-            data=StudentData(student=dumpModel(record))
+            data=AssistableData(assistable=dumpModel(record))
         ).send(200)

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class CreateStudentSchema(BaseModel):
+class CreateAssistableSchema(BaseModel):
     entity_id: str
     first_name: str
     last_name: str

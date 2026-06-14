@@ -344,7 +344,7 @@
     <div class="sidebar-group-label">Core</div>
     <button class="route-btn" data-route="entity" onclick="show('entity')"><span class="dot" style="background:#7a7670"></span>/entity</button>
     <button class="route-btn" data-route="interactor" onclick="show('interactor')"><span class="dot" style="background:#4a2a7a"></span>/interactor</button>
-    <button class="route-btn" data-route="student" onclick="show('student')"><span class="dot" style="background:#1a4d7a"></span>/student</button>
+    <button class="route-btn" data-route="assistable" onclick="show('assistable')"><span class="dot" style="background:#1a4d7a"></span>/assistable</button>
 
     <div class="sidebar-group-label">Roles & Auth</div>
     <button class="route-btn" data-route="role" onclick="show('role')"><span class="dot" style="background:#4a2a7a"></span>/role</button>
@@ -373,7 +373,7 @@
     <div id="content-area"></div>
 
     <footer class="footer">
-      <span>Student Attendance System — API Explorer v1</span>
+      <span>Attendance System — API Explorer v1</span>
       <span>14 route groups · 50+ endpoints · JWT + API Key auth · Flask/SQLAlchemy</span>
     </footer>
   </div>
@@ -383,7 +383,7 @@
 <script>
 const API = {
   overview: {
-    desc: "Browse all route groups in the Student Attendance System REST API. Click any module card or sidebar entry to explore endpoints, request fields, permission levels, and usage notes.",
+    desc: "Browse all route groups in the Attendance System REST API. Click any module card or sidebar entry to explore endpoints, request fields, permission levels, and usage notes.",
   },
 
   status: {
@@ -451,21 +451,21 @@ const API = {
   entity: {
     color: "#7a7670",
     prefix: "/v1/entity",
-    desc: "Entity management. Entities are abstract identity anchors — every student and interactor must own one. Create entities before creating students or interactors.",
-    purpose: "An entity has no data beyond its UUID and creation timestamp. It exists so students and interactors share a common identity root without coupling to each other's tables.",
+    desc: "Entity management. Entities are abstract identity anchors — every assistable and interactor must own one. Create entities before creating assistable or interactors.",
+    purpose: "An entity has no data beyond its UUID and creation timestamp. It exists so assistable and interactors share a common identity root without coupling to each other's tables.",
     endpoints: [
       { method:"POST",   path:"/v1/entity/", desc:"Create a new empty entity.", perm:"Level 3+" },
       { method:"GET",    path:"/v1/entity/", desc:"List all entities, ordered by creation date descending.", perm:"Level 1+" },
       { method:"GET",    path:"/v1/entity/:entityId", desc:"Get a single entity by UUID.", perm:"Level 1+" },
-      { method:"DELETE", path:"/v1/entity/:entityId", desc:"Delete entity. Cascades to the linked student or interactor.", perm:"Level 3+" },
+      { method:"DELETE", path:"/v1/entity/:entityId", desc:"Delete entity. Cascades to the linked assistable or interactor.", perm:"Level 3+" },
     ],
     fields: [],
     relations: [
-      { arrow:"→", name:"/student", desc:"An entity can be linked to one student.", type:"parent-of" },
+      { arrow:"→", name:"/assistable", desc:"An entity can be linked to one assistable.", type:"parent-of" },
       { arrow:"→", name:"/interactor", desc:"An entity can be linked to one interactor.", type:"parent-of" },
     ],
     notes: [
-      { type:"warn", text:"<strong>Cascade delete:</strong> Deleting an entity permanently removes its linked student or interactor and all their dependent records (attendance, fingerprints)." }
+      { type:"warn", text:"<strong>Cascade delete:</strong> Deleting an entity permanently removes its linked assistable or interactor and all their dependent records (attendance, fingerprints)." }
     ]
   },
 
@@ -498,36 +498,36 @@ const API = {
     ]
   },
 
-  student: {
+  assistable: {
     color: "#1a4d7a",
-    prefix: "/v1/student",
-    desc: "Student management. Core person record. Each student must link to an entity and carries personal data, unique carnet ID, email, and phone number.",
+    prefix: "/v1/assistable",
+    desc: "Assistable management. Core person record. Each assistable must link to an entity and carries personal data, unique carnet ID, email, and phone number.",
     purpose: "Use soft-delete (<code>is_active: false</code>) via PUT instead of DELETE to preserve attendance history. Hard deletes cascade to all attendance and fingerprint records.",
     endpoints: [
-      { method:"POST",   path:"/v1/student/", desc:"Create a new student record.", perm:"Level 3+" },
-      { method:"GET",    path:"/v1/student/", desc:"List all students, ordered by creation date descending.", perm:"Level 1+" },
-      { method:"GET",    path:"/v1/student/:studentId", desc:"Get a single student by UUID.", perm:"Level 1+" },
-      { method:"PUT",    path:"/v1/student/:studentId", desc:"Update student fields. All fields optional.", perm:"Level 2+" },
-      { method:"DELETE", path:"/v1/student/:studentId", desc:"Hard delete student. Cascades to attendance and fingerprints.", perm:"Level 3+" },
+      { method:"POST",   path:"/v1/assistable/", desc:"Create a new assistable record.", perm:"Level 3+" },
+      { method:"GET",    path:"/v1/assistable/", desc:"List all assistable, ordered by creation date descending.", perm:"Level 1+" },
+      { method:"GET",    path:"/v1/assistable/:assistableId", desc:"Get a single assistable by UUID.", perm:"Level 1+" },
+      { method:"PUT",    path:"/v1/assistable/:assistableId", desc:"Update assistable fields. All fields optional.", perm:"Level 2+" },
+      { method:"DELETE", path:"/v1/assistable/:assistableId", desc:"Hard delete assistable. Cascades to attendance and fingerprints.", perm:"Level 3+" },
     ],
     fields: [
       { name:"entity_id",    type:"UUID",   desc:"Must reference an existing entity (1-to-1).", flags:["REQ"] },
       { name:"first_name",   type:"string", desc:"Up to 250 characters.", flags:["REQ"] },
       { name:"last_name",    type:"string", desc:"Up to 250 characters.", flags:["REQ"] },
       { name:"birthdate",    type:"string", desc:"Date string (YYYY-MM-DD).", flags:["REQ"] },
-      { name:"carnet",       type:"string", desc:"Unique student ID, max 10 chars. Do not change after enrolment.", flags:["REQ"] },
-      { name:"email",        type:"string", desc:"Must be unique across all students.", flags:["REQ"] },
+      { name:"carnet",       type:"string", desc:"Unique assistable ID, max 10 chars. Do not change after enrolment.", flags:["REQ"] },
+      { name:"email",        type:"string", desc:"Must be unique across all assistable.", flags:["REQ"] },
       { name:"phone_number", type:"string", desc:"Must be unique, max 20 chars.", flags:["REQ"] },
       { name:"is_active",    type:"boolean",desc:"Default true. Set false to soft-delete.", flags:["OPT"] },
     ],
     relations: [
-      { arrow:"→", name:"/entity",      desc:"Student requires a linked entity.", type:"requires" },
-      { arrow:"←", name:"/fingerprint", desc:"A student can have up to 10 fingerprint templates.", type:"has-many" },
-      { arrow:"←", name:"/attendance",  desc:"All attendance records reference a student.", type:"has-many" },
+      { arrow:"→", name:"/entity",      desc:"Assistable requires a linked entity.", type:"requires" },
+      { arrow:"←", name:"/fingerprint", desc:"A assistable can have up to 10 fingerprint templates.", type:"has-many" },
+      { arrow:"←", name:"/attendance",  desc:"All attendance records reference a assistable.", type:"has-many" },
     ],
     notes: [
-      { type:"warn", text:"<strong>Hard delete cascades:</strong> Deleting a student permanently removes all their attendance records and fingerprint templates. Prefer <code>is_active: false</code> in production." },
-      { type:"amber", text:"<strong>Carnet:</strong> Do not update carnet after enrolment — it may be referenced by external systems and is the human-readable student identifier." }
+      { type:"warn", text:"<strong>Hard delete cascades:</strong> Deleting a assistable permanently removes all their attendance records and fingerprint templates. Prefer <code>is_active: false</code> in production." },
+      { type:"amber", text:"<strong>Carnet:</strong> Do not update carnet after enrolment — it may be referenced by external systems and is the human-readable assistable identifier." }
     ]
   },
 
@@ -584,8 +584,8 @@ const API = {
   attendance: {
     color: "#1a6b44",
     prefix: "/v1/attendance",
-    desc: "Attendance record management. The core fact table. Records each student's presence for a specific date and time-of-day slot, with the method used and who recorded it.",
-    purpose: "Each attendance record is unique per student, per date, per day-time slot. Attempts to create a duplicate return 409. The <code>edited_at</code> timestamp is set automatically by a DB trigger on every update.",
+    desc: "Attendance record management. The core fact table. Records each assistable's presence for a specific date and time-of-day slot, with the method used and who recorded it.",
+    purpose: "Each attendance record is unique per assistable, per date, per day-time slot. Attempts to create a duplicate return 409. The <code>edited_at</code> timestamp is set automatically by a DB trigger on every update.",
     endpoints: [
       { method:"POST",   path:"/v1/attendance/", desc:"Record a new attendance event.", perm:"Level 2+" },
       { method:"GET",    path:"/v1/attendance/", desc:"List all records, ordered by date then created_at descending.", perm:"Level 1+" },
@@ -594,20 +594,20 @@ const API = {
       { method:"DELETE", path:"/v1/attendance/:attendanceId", desc:"Delete an attendance record. Captured in audit log.", perm:"Level 3+" },
     ],
     fields: [
-      { name:"student_id",               type:"UUID",    desc:"Must reference an existing student.", flags:["REQ"] },
+      { name:"assistable_id",               type:"UUID",    desc:"Must reference an existing assistable.", flags:["REQ"] },
       { name:"attendance_date",           type:"string",  desc:"Date string (YYYY-MM-DD).", flags:["REQ"] },
       { name:"attendance_day_time_id",    type:"integer", desc:"Must reference an existing day-time slot.", flags:["REQ"] },
       { name:"attendance_method_id",      type:"integer", desc:"Must reference an existing attendance method.", flags:["REQ"] },
       { name:"recorded_by_interactor_id", type:"UUID",    desc:"Which interactor logged this. Optional.", flags:["OPT"] },
     ],
     relations: [
-      { arrow:"→", name:"/student",             desc:"Attendance belongs to one student.", type:"requires" },
+      { arrow:"→", name:"/assistable",             desc:"Attendance belongs to one assistable.", type:"requires" },
       { arrow:"→", name:"/attendance-day-time", desc:"MORNING, AFTERNOON, or NIGHT slot.", type:"requires" },
       { arrow:"→", name:"/attendance-method",   desc:"AUTOMATIC, MANUAL, or IMPORTED.", type:"requires" },
       { arrow:"→", name:"/interactor",          desc:"Optional — who recorded the entry.", type:"optional-ref" },
     ],
     notes: [
-      { type:"warn", text:"<strong>Uniqueness:</strong> (student_id + attendance_date + attendance_day_time_id) must be unique. Conflicts return 409. The API checks this before INSERT." },
+      { type:"warn", text:"<strong>Uniqueness:</strong> (assistable_id + attendance_date + attendance_day_time_id) must be unique. Conflicts return 409. The API checks this before INSERT." },
       { type:"info", text:"<strong>edited_at:</strong> Do not include this field in PUT requests — a database trigger updates it automatically on every row change." },
       { type:"amber", text:"<strong>No soft-delete:</strong> Deletions are permanent but captured in the audit log. Recovery is possible only by reading <code>audit_log.old_data</code>." }
     ]
@@ -664,7 +664,7 @@ const API = {
   fingerprint: {
     color: "#993c1d",
     prefix: "/v1/fingerprint",
-    desc: "Fingerprint template management. Stores raw biometric templates (as hex strings) for each enrolled finger. One template per finger per student, enforced by a unique constraint.",
+    desc: "Fingerprint template management. Stores raw biometric templates (as hex strings) for each enrolled finger. One template per finger per assistable, enforced by a unique constraint.",
     purpose: "Templates are stored as BYTEA in PostgreSQL and returned as hex strings in API responses. Pass the hex string to your biometric SDK — never compare templates in SQL.",
     endpoints: [
       { method:"POST",   path:"/v1/fingerprint/", desc:"Enrol a new fingerprint template.", perm:"Level 3+" },
@@ -675,18 +675,18 @@ const API = {
     ],
     fields: [
       { name:"template",            type:"string (hex)", desc:"Raw biometric data as a hex string.", flags:["REQ"] },
-      { name:"student_id",          type:"UUID",         desc:"Must reference an existing student.", flags:["REQ"] },
+      { name:"assistable_id",          type:"UUID",         desc:"Must reference an existing assistable.", flags:["REQ"] },
       { name:"fingerprint_type_id", type:"integer",      desc:"Must reference a fingerprint type (LOOP, WHORL, etc.).", flags:["REQ"] },
       { name:"fingerprint_name_id", type:"integer",      desc:"Must reference a finger name (RIGHT_INDEX, etc.).", flags:["REQ"] },
       { name:"is_active",           type:"boolean",      desc:"Default true. Set false to retire without deleting.", flags:["OPT"] },
     ],
     relations: [
-      { arrow:"→", name:"/student",          desc:"Template belongs to one student.", type:"requires" },
+      { arrow:"→", name:"/assistable",          desc:"Template belongs to one assistable.", type:"requires" },
       { arrow:"→", name:"/fingerprint-name", desc:"Identifies which finger was enrolled.", type:"requires" },
       { arrow:"→", name:"/fingerprint-type", desc:"Classification of the fingerprint pattern.", type:"requires" },
     ],
     notes: [
-      { type:"warn", text:"<strong>One template per finger:</strong> (student_id + fingerprint_name_id) must be unique. To re-enrol a finger, set the existing template to <code>is_active: false</code> via PUT, then POST a new one." },
+      { type:"warn", text:"<strong>One template per finger:</strong> (assistable_id + fingerprint_name_id) must be unique. To re-enrol a finger, set the existing template to <code>is_active: false</code> via PUT, then POST a new one." },
       { type:"info", text:"<strong>Template format:</strong> Send and receive as a hex string. Convert bytes to hex before POST and from hex after GET before passing to your biometric SDK." }
     ]
   },
@@ -741,7 +741,7 @@ const API = {
 
 const GROUPS = [
   { label:"System", routes:["status","auth","system"] },
-  { label:"Core", routes:["entity","interactor","student"] },
+  { label:"Core", routes:["entity","interactor","assistable"] },
   { label:"Roles & Auth", routes:["role","permission-level"] },
   { label:"Attendance", routes:["attendance","attendance-day-time","attendance-method"] },
   { label:"Fingerprints", routes:["fingerprint","fingerprint-name","fingerprint-type"] },
@@ -770,7 +770,7 @@ function renderContent() {
     let h = `<div class="content">`;
     h += `<div class="overview-header">`;
     h += `<div class="eyebrow">API Explorer</div>`;
-    h += `<h1>Student Attendance System <em>API</em></h1>`;
+    h += `<h1>Attendance System <em>API</em></h1>`;
     h += `<p class="overview-desc">${API.overview.desc}</p>`;
     h += `</div>`;
     h += `<div class="stats-row">`;

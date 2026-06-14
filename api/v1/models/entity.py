@@ -8,5 +8,5 @@ class Entity(DB.Model):
     id         = DB.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     created_at = DB.Column(DB.DateTime(timezone=True), server_default=DB.func.now())
 
-    student    = DB.relationship('Student',    back_populates='entity', uselist=False)
+    assistable    = DB.relationship('Assistable',    back_populates='entity', uselist=False)
     interactor = DB.relationship('Interactor', back_populates='entity', uselist=False)

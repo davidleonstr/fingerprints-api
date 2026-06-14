@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class UpdateStudentSchema(BaseModel):
+class UpdateAssistableSchema(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     birthdate: Optional[str] = None

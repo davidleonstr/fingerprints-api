@@ -10,7 +10,7 @@ from .fingerprintType import FingerprintType
 from .interactor import Interactor
 from .permissionLevel import PermissionLevel
 from .role import Role
-from .student import Student
+from .assistable import Assistable
 
 __all__ = [
     'Attendance',
@@ -25,5 +25,5 @@ __all__ = [
     'Interactor',
     'PermissionLevel',
     'Role',
-    'Student',
+    'Assistable',
 ]

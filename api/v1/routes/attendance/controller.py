@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from api.config import DB
 from api.tools import Response, ResponseData, dumpModel
-from api.v1.models import Attendance, Student, AttendanceDayTime, AttendanceMethod, Interactor
+from api.v1.models import Attendance, Assistable, AttendanceDayTime, AttendanceMethod, Interactor
 
 from api.v1.routes.attendance.schemas import (
     AttendancesData,
@@ -30,11 +30,11 @@ class AttendanceController:
                 data=ResponseData(message=e.errors()[0]['msg'])
             ).send(422)
 
-        student = Student.query.get(payload.student_id)
+        assistable = Assistable.query.get(payload.assistable_id)
 
-        if student is None:
+        if assistable is None:
             return Response(
-                data=ResponseData(message='Student not found')
+                data=ResponseData(message='Assistable not found')
             ).send(404)
 
         attendanceDayTime = AttendanceDayTime.query.get(payload.attendance_day_time_id)
@@ -60,18 +60,18 @@ class AttendanceController:
                 ).send(404)
 
         existing = Attendance.query.filter_by(
-            student_id=payload.student_id,
+            assistable_id=payload.assistable_id,
             attendance_date=payload.attendance_date,
             attendance_day_time_id=payload.attendance_day_time_id,
         ).first()
 
         if existing is not None:
             return Response(
-                data=ResponseData(message='Attendance record already exists for this student, date and day time')
+                data=ResponseData(message='Attendance record already exists for this assistable, date and day time')
             ).send(409)
 
         record = Attendance(
-            student_id=payload.student_id,
+            assistable_id=payload.assistable_id,
             attendance_date=payload.attendance_date,
             attendance_day_time_id=payload.attendance_day_time_id,
             attendance_method_id=payload.attendance_method_id,
@@ -139,14 +139,14 @@ class AttendanceController:
             newDayTimeId = payload.attendance_day_time_id if payload.attendance_day_time_id is not None else record.attendance_day_time_id
 
             conflict = Attendance.query.filter_by(
-                student_id=str(record.student_id),
+                assistable_id=str(record.assistable_id),
                 attendance_date=newDate,
                 attendance_day_time_id=newDayTimeId,
             ).first()
 
             if conflict is not None and str(conflict.id) != attendanceId:
                 return Response(
-                    data=ResponseData(message='Attendance record already exists for this student, date and day time')
+                    data=ResponseData(message='Attendance record already exists for this assistable, date and day time')
                 ).send(409)
 
             record.attendance_date = newDate

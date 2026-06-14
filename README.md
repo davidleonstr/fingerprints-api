@@ -1,6 +1,6 @@
 # FINGERPRINT ATTENDANCE SYSTEM - API
 
-A RESTful API built with Flask for managing student fingerprint-based attendance tracking. It supports role-based access control via JWT and API key authentication.
+A RESTful API built with Flask for managing fingerprint-based attendance tracking. It supports role-based access control via JWT and API key authentication.
 
 ---
 
@@ -179,7 +179,7 @@ Content-Type: application/json
 | System                | `/v1/system/`                   |
 | Entities              | `/v1/entity/`                   |
 | Interactors           | `/v1/interactor/`               |
-| Students              | `/v1/student/`                  |
+| Assistable            | `/v1/assistable/`                  |
 | Roles                 | `/v1/role/`                     |
 | Permission Levels     | `/v1/permission-level/`         |
 | Attendance            | `/v1/attendance/`               |

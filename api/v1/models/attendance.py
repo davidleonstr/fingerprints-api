@@ -6,13 +6,13 @@ class Attendance(DB.Model):
     __tablename__ = 'attendance'
     __table_args__ = (
         DB.UniqueConstraint(
-            'student_id', 'attendance_date', 'attendance_day_time_id',
-            name='uq_student_id_date_unique',
+            'assistable_id', 'attendance_date', 'attendance_day_time_id',
+            name='uq_assistable_id_date_unique',
         ),
     )
 
     id                        = DB.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    student_id                = DB.Column(UUID(as_uuid=True), DB.ForeignKey('students.id', ondelete='CASCADE'), nullable=False)
+    assistable_id                = DB.Column(UUID(as_uuid=True), DB.ForeignKey('assistable.id', ondelete='CASCADE'), nullable=False)
     attendance_date           = DB.Column(DB.Date, nullable=False)
     attendance_day_time_id    = DB.Column(DB.Integer, DB.ForeignKey('attendance_day_times.id'), nullable=False)
     attendance_method_id      = DB.Column(DB.Integer, DB.ForeignKey('attendance_methods.id'), nullable=False)
@@ -21,7 +21,7 @@ class Attendance(DB.Model):
     created_at                = DB.Column(DB.DateTime(timezone=True), server_default=DB.func.now())
     edited_at                 = DB.Column(DB.DateTime(timezone=True), server_default=DB.func.now())
 
-    student             = DB.relationship('Student',           back_populates='attendances')
+    assistable             = DB.relationship('Assistable',           back_populates='attendances')
     attendance_day_time = DB.relationship('AttendanceDayTime', back_populates='attendances')
     attendance_method   = DB.relationship('AttendanceMethod',  back_populates='attendances')
     recorded_by         = DB.relationship(

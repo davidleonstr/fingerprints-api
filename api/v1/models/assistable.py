@@ -2,8 +2,8 @@ import uuid
 from api.config.database import DB
 from sqlalchemy.dialects.postgresql import UUID
 
-class Student(DB.Model):
-    __tablename__ = 'students'
+class Assistable(DB.Model):
+    __tablename__ = 'assistable'
 
     id           = DB.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     entity_id    = DB.Column(UUID(as_uuid=True), DB.ForeignKey('entities.id', ondelete='CASCADE'), unique=True)
@@ -16,6 +16,6 @@ class Student(DB.Model):
     is_active    = DB.Column(DB.Boolean, default=True)
     created_at   = DB.Column(DB.DateTime(timezone=True), server_default=DB.func.now())
 
-    entity       = DB.relationship('Entity',      back_populates='student')
-    fingerprints = DB.relationship('Fingerprint', back_populates='student', cascade='all, delete-orphan')
-    attendances  = DB.relationship('Attendance',  back_populates='student', cascade='all, delete-orphan')
+    entity       = DB.relationship('Entity',      back_populates='assistable')
+    fingerprints = DB.relationship('Fingerprint', back_populates='assistable', cascade='all, delete-orphan')
+    attendances  = DB.relationship('Attendance',  back_populates='assistable', cascade='all, delete-orphan')

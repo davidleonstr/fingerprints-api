@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from api.config import DB
 from api.tools import Response, ResponseData, dumpModel
-from api.v1.models import Fingerprint, Student, FingerprintType, FingerprintName
+from api.v1.models import Fingerprint, Assistable, FingerprintType, FingerprintName
 
 from api.v1.routes.fingerprint.schemas import (
     FingerprintsData,
@@ -30,11 +30,11 @@ class FingerprintController:
                 data=ResponseData(message=e.errors()[0]['msg'])
             ).send(422)
 
-        student = Student.query.get(payload.student_id)
+        assistable = Assistable.query.get(payload.assistable_id)
 
-        if student is None:
+        if assistable is None:
             return Response(
-                data=ResponseData(message='Student not found')
+                data=ResponseData(message='Assistable not found')
             ).send(404)
 
         fingerprintType = FingerprintType.query.get(payload.fingerprint_type_id)
@@ -52,18 +52,18 @@ class FingerprintController:
             ).send(404)
 
         existing = Fingerprint.query.filter_by(
-            student_id=payload.student_id,
+            assistable_id=payload.assistable_id,
             fingerprint_name_id=payload.fingerprint_name_id,
         ).first()
 
         if existing is not None:
             return Response(
-                data=ResponseData(message='Fingerprint record already exists for this student and finger')
+                data=ResponseData(message='Fingerprint record already exists for this assistable and finger')
             ).send(409)
 
         record = Fingerprint(
             template=bytes.fromhex(payload.template),
-            student_id=payload.student_id,
+            assistable_id=payload.assistable_id,
             fingerprint_type_id=payload.fingerprint_type_id,
             fingerprint_name_id=payload.fingerprint_name_id,
             is_active=payload.is_active,
@@ -134,13 +134,13 @@ class FingerprintController:
                 ).send(404)
 
             conflict = Fingerprint.query.filter_by(
-                student_id=str(record.student_id),
+                assistable_id=str(record.assistable_id),
                 fingerprint_name_id=payload.fingerprint_name_id,
             ).first()
 
             if conflict is not None and str(conflict.id) != fingerprintId:
                 return Response(
-                    data=ResponseData(message='Fingerprint record already exists for this student and finger')
+                    data=ResponseData(message='Fingerprint record already exists for this assistable and finger')
                 ).send(409)
 
             record.fingerprint_name_id = payload.fingerprint_name_id
